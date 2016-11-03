@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">WirelessFax</string>
+    <string name="login_forget_label"><u>忘记密码</u></string>
+</resources>
