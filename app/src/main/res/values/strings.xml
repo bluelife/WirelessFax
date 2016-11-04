@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">WirelessFax</string>
-    <string name="login_forget_label"><u>忘记密码</u></string>
+    <string name="login_forget_label">&lt;u>忘记密码&lt;/u</string>
+    <string name="fax_inbox">传真收件箱</string>
+    <string name="fax_stared">星标传真件</string>
+    <string name="fax_drift">草稿箱</string>
+    <string name="fax_sended">已发送传真件</string>
+    <string name="drawer_contacts_title">通讯录</string>
+    <string name="drawer_fax_title">传真文件夹</string>
+    <string name="contacts_menu_label">通讯录</string>
+    <string name="drawer_open">drawer_open</string>
+    <string name="drawer_close">drawer_close</string>
+    <string name="toobar_inbox_title">收件箱</string>
+    <string name="back">返回</string>
 </resources>

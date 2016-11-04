@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="@string/drawer_contacts_title">
+        <menu>
+            <item
+                android:id="@+id/nav_contacts"
+                android:icon="@drawable/assets_tabbarcontactsicon"
+                android:title="@string/contacts_menu_label" />
+
+        </menu>
+    </item>
+    <item android:title="@string/drawer_fax_title">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:icon="@drawable/assets_inboxicon"
+                    android:title="@string/fax_inbox" />
+                <item
+                    android:icon="@drawable/assets_importanticon"
+                    android:title="@string/fax_stared" />
+                <item
+                    android:icon="@drawable/assets_drafticon"
+                    android:title="@string/fax_drift" />
+                <item
+                    android:icon="@drawable/assets_senticon"
+                    android:title="@string/fax_sended" />
+            </group>
+        </menu>
+    </item>
+
+
+
+</menu>

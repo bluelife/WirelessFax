@@ -2,5 +2,9 @@
 <resources>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#64dd17</color>
+
+    <color name="background_blue">#014099</color>
+    <color name="line_gray">#cacaca</color>
+    <color name="email_detail_head">#efefef</color>
 </resources>

@@ -8,6 +8,8 @@ import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.widget.TextView;
 
+import com.csto.bluelife.wirelessfax.utils.TextUtil;
+
 /**
  * Created by HiWin10 on 2016/11/3.
  */
@@ -19,7 +21,9 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         TextView textView = (TextView) findViewById(R.id.login_forget);
-        textView.setText(Html.fromHtml(getString(R.string.login_forget_label)));
+        textView.setText(TextUtil.fromHtml(getString(R.string.login_forget_label)));
 
     }
+
+
 }
