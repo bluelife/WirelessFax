@@ -16,6 +16,7 @@
                     android:icon="@drawable/assets_inboxicon"
                     android:title="@string/fax_inbox" />
                 <item
+
                     android:icon="@drawable/assets_importanticon"
                     android:title="@string/fax_stared" />
                 <item

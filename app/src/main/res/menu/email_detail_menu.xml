@@ -5,14 +5,14 @@
     tools:context=".MainActivity">
     <item
         android:id="@+id/action_search"
-        android:icon="@drawable/menu_email_prev_disable"
+        android:icon="@drawable/detail_up_icon_disable"
         android:title="prev"
         android:orderInCategory="90"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_add"
-        android:icon="@drawable/menu_email_next"
+        android:icon="@drawable/detail_down_icon_enable"
         android:title="next"
         android:orderInCategory="90"
         app:showAsAction="always" />

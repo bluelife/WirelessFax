@@ -5,14 +5,14 @@
     tools:context=".MainActivity">
     <item
         android:id="@+id/action_search"
-        android:icon="@drawable/action_search"
+        android:icon="@drawable/home_search_icon"
         android:title="search"
         android:orderInCategory="90"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_add"
-        android:icon="@drawable/action_add"
+        android:icon="@drawable/home_add_icon"
         android:title="search"
         android:orderInCategory="90"
         app:showAsAction="always" />

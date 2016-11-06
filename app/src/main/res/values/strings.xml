@@ -12,4 +12,5 @@
     <string name="drawer_close">drawer_close</string>
     <string name="toobar_inbox_title">收件箱</string>
     <string name="back">返回</string>
+    <string name="transition">reveal</string>
 </resources>
