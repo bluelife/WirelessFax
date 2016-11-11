@@ -1,19 +1,49 @@
 package com.csto.bluelife.wirelessfax;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PointF;
+import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomSheetDialog;
+import android.support.design.widget.Snackbar;
 import android.support.transition.Fade;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
+import android.support.v7.widget.Toolbar;
 import android.transition.TransitionInflater;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.csto.bluelife.wirelessfax.combin.ImageManager;
+import com.csto.bluelife.wirelessfax.utils.FileUtil;
+import com.csto.bluelife.wirelessfax.utils.ImageUtil;
+import com.csto.bluelife.wirelessfax.widget.TouchImageView;
+import com.github.gcacace.signaturepad.views.SignaturePad;
+
+import org.beyka.tiffbitmapfactory.TiffSaver;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,7 +53,7 @@ import butterknife.OnClick;
  * Created by slomka.jin on 2016/11/4.
  */
 
-public class EmailDetailFragment extends Fragment {
+public class EmailDetailFragment extends Fragment implements ImageManager.Listener, ActionMode.Callback, View.OnTouchListener {
 
     @BindView(R.id.signText)
     TextView signText;
@@ -35,7 +65,23 @@ public class EmailDetailFragment extends Fragment {
     TextView del;
     @BindView(R.id.detail_more)
     TextView more;
+    @BindView(R.id.drawer_layout)
+    FrameLayout frameLayout;
+    @BindView(R.id.detail_progress_bar)
+    ProgressBar progressBar;
+    @BindView(R.id.root_layout)
+    ViewGroup rootView;
+    @BindView(R.id.email_bottom_image)
+    ImageView tiffImage;
+    @BindView(R.id.email_up_image)
+    TouchImageView pickedImage;
     private AlphaAnimation buttonClick = new AlphaAnimation(1F, 0.2F);
+    private ImageManager imageManager;
+    private AppCompatActivity activity;
+    private final int FIX_WIDTH=1728;
+    private SignaturePad signaturePad;
+    private BottomSheetDialog bottomSheetDialog;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -49,32 +95,38 @@ public class EmailDetailFragment extends Fragment {
 
     @OnClick(R.id.signText)
     void onSignText(){
-        buttonClick.setDuration(500);
-        signText.startAnimation(buttonClick);
+        fadeButton(signText);
+        imageManager.onSignnature();
     }
     @OnClick(R.id.signImage)
     void onSignImage(){
-        buttonClick.setDuration(500);
-        signImage.startAnimation(buttonClick);
+        fadeButton(signImage);
+        imageManager.pickTiff();
     }
     @OnClick(R.id.detail_reward)
     void onReward(){
-        buttonClick.setDuration(500);
-        reward.startAnimation(buttonClick);
+        fadeButton(reward);
     }
     @OnClick(R.id.detail_del)
     void onDel(){
-        buttonClick.setDuration(500);
-        del.startAnimation(buttonClick);
+        fadeButton(del);
     }
     @OnClick(R.id.detail_more)
     void onMore(){
+        fadeButton(more);
+    }
+    void fadeButton(View view){
         buttonClick.setDuration(500);
-        more.startAnimation(buttonClick);
+        view.startAnimation(buttonClick);
     }
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        activity=(AppCompatActivity) getActivity();
+        imageManager=new ImageManager(activity,this);
+        imageManager.setListener(this);
+        progressBar.setVisibility(View.GONE);
+        pickedImage.setMinZoom(0.25f);
     }
 
     @Override
@@ -85,5 +137,177 @@ public class EmailDetailFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void PickFormatError() {
+        Snackbar.make(rootView,getString(R.string.pick_error_format),Snackbar.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    public void setTiff() {
+        Bitmap bitmap= FileUtil.loadImage(imageManager.getImage());
+        tiffImage.setImageBitmap(bitmap);
+
+    }
+
+    @Override
+    public void doCombin(String image) {
+        activity.startSupportActionMode(this);
+
+        Bitmap bitmap=FileUtil.loadImage(image);
+        pickedImage.setImageBitmap(bitmap);
+    }
+
+    @Override
+    public void onSelectSignPosition() {
+        Snackbar snackbar=Snackbar.make(rootView,getString(R.string.detail_choose_signature_position),Snackbar.LENGTH_SHORT);
+        snackbar.getView().setBackgroundColor(ContextCompat.getColor(getContext(),R.color.colorAccent));
+        snackbar.show();
+        frameLayout.setOnTouchListener(this);
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        imageManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.combin_menu, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false;
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_combin:
+                combinAll();
+                break;
+
+        }
+        return true;
+    }
+
+    private void combinAll(){
+        progressBar.setVisibility(View.VISIBLE);
+
+            //combin image;
+
+            frameLayout.setDrawingCacheEnabled(true);
+            Bitmap capture = frameLayout.getDrawingCache();
+            int width, height;
+            width = capture.getWidth();
+            height = capture.getHeight();
+            Bitmap fixWidthBitmap = Bitmap.createBitmap(FIX_WIDTH, height, Bitmap.Config.RGB_565);
+            fixWidthBitmap.eraseColor(Color.WHITE);
+            Canvas canvas = new Canvas(fixWidthBitmap);
+            Rect src = new Rect(0, 0, width, height);
+            Rect dest = new Rect(src);
+            dest.offset(FIX_WIDTH / 2 - width / 2, 0);
+            canvas.drawBitmap(capture, src, dest, null);
+            //Bitmap grayBmp = Transform.grayscale(capture);
+            new SaveTiffTask().execute(fixWidthBitmap);
+            frameLayout.setDrawingCacheEnabled(false);
+
+    }
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+
+    }
+
+    public void removeTouchListener(){
+        frameLayout.setOnTouchListener(null);
+    }
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        switch (motionEvent.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                float x = motionEvent.getX();
+                float y = motionEvent.getY();
+                imageManager.setSignPoint(new PointF(x,y));
+                removeTouchListener();
+                showSignatureDialog();
+                return true;
+        }
+        return false;
+    }
+
+    private void showSignatureDialog(){
+        bottomSheetDialog = new BottomSheetDialog(getContext());
+
+        View view1 = getActivity().getLayoutInflater().inflate(R.layout.bottom_sheet_layout, null);
+        signaturePad= (SignaturePad) view1.findViewById(R.id.signature_pad);
+        bottomSheetDialog.setContentView(view1);
+        Button button=(Button)view1.findViewById(R.id.detail_sign_done);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.hide();
+                drawSignature();
+                activity.startSupportActionMode(EmailDetailFragment.this);
+            }
+        });
+        ImageView delBtn=(ImageView)view1.findViewById(R.id.detail_sign_del);
+        delBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                signaturePad.clear();
+            }
+        });
+        bottomSheetDialog.show();
+
+    }
+
+    private void drawSignature(){
+        signaturePad.setDrawingCacheEnabled(true);
+        Bitmap bitmap=signaturePad.getDrawingCache();
+        bitmap= ImageUtil.TrimBitmap(bitmap);
+        Bitmap scaledBitmap=Bitmap.createScaledBitmap(bitmap,bitmap.getWidth()/4,bitmap.getHeight()/4,false);
+        ImageView signImage=new ImageView(getContext());
+        signImage.setImageBitmap(scaledBitmap);
+        signaturePad.setDrawingCacheEnabled(false);
+        FrameLayout.LayoutParams layoutParams=new FrameLayout.LayoutParams
+                (ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        PointF pointF=imageManager.getSignPoint();
+        int left= (int) pointF.x;
+        int top=(int)pointF.y;
+        layoutParams.setMargins(left,top,0,0);
+        frameLayout.addView(signImage,layoutParams);
+    }
+    private class SaveTiffTask extends AsyncTask<Bitmap,Void,Boolean> {
+
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected Boolean doInBackground(Bitmap... params) {
+            return imageManager.saveImage(params[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean done) {
+            progressBar.setVisibility(View.GONE);
+            if(done){
+                imageManager.init();
+                setTiff();
+                pickedImage.setImageBitmap(null);
+            }
+            else{
+                Snackbar snackbar=Snackbar.make(frameLayout,"some error accured,image not saved.",Snackbar.LENGTH_LONG);
+                snackbar.show();
+            }
+        }
     }
 }

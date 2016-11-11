@@ -1,6 +1,7 @@
 package com.csto.bluelife.wirelessfax;
 
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionInflater;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -216,5 +218,10 @@ public class MainActivity extends AppCompatActivity implements DrawerLayout.Draw
     @Override
     public void onDrawerStateChanged(int newState) {
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

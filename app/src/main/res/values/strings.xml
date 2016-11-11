@@ -13,4 +13,9 @@
     <string name="toobar_inbox_title">收件箱</string>
     <string name="back">返回</string>
     <string name="transition">reveal</string>
+    <string name="menu_combin_title">合并</string>
+    <string name="pick_error_format">您选择的图片包含不支持的格式，请重新选择</string>
+    <string name="detail_choose_signature_position">请点击屏幕选择签名的位置</string>
+    <string name="detail_bottom_sheet_title">请手写签名：</string>
+    <string name="detail_signature_del">删除</string>
 </resources>

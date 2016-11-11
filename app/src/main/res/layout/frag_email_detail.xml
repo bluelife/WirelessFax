@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <ProgressBar
+        android:id="@+id/detail_progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
     <LinearLayout
         android:id="@+id/detail_control_panel"
         android:layout_alignParentBottom="true"
@@ -153,11 +159,21 @@
             android:layout_height="1dp"
             android:background="@color/line_gray" />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleType="fitXY"
-            android:src="@drawable/fax" />
+        <FrameLayout
+            android:id="@+id/drawer_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ImageView
+                android:layout_gravity="center"
+                android:id="@+id/email_bottom_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+             />
+            <com.csto.bluelife.wirelessfax.widget.TouchImageView
+                android:id="@+id/email_up_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
     </LinearLayout>
 
 
