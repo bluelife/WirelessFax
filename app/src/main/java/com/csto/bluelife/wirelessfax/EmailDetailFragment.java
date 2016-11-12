@@ -26,7 +26,9 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -58,7 +60,7 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
     @BindView(R.id.signText)
     TextView signText;
     @BindView(R.id.signImage)
-    TextView signImage;
+    TextView signImageText;
     @BindView(R.id.detail_reward)
     TextView reward;
     @BindView(R.id.detail_del)
@@ -75,12 +77,14 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
     ImageView tiffImage;
     @BindView(R.id.email_up_image)
     TouchImageView pickedImage;
+    ImageView signImage;
     private AlphaAnimation buttonClick = new AlphaAnimation(1F, 0.2F);
     private ImageManager imageManager;
     private AppCompatActivity activity;
     private final int FIX_WIDTH=1728;
     private SignaturePad signaturePad;
     private BottomSheetDialog bottomSheetDialog;
+    private ImageView pointView;
 
     @Nullable
     @Override
@@ -96,12 +100,14 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
     @OnClick(R.id.signText)
     void onSignText(){
         fadeButton(signText);
+        pickedImage.setVisibility(View.GONE);
         imageManager.onSignnature();
     }
     @OnClick(R.id.signImage)
     void onSignImage(){
-        fadeButton(signImage);
-        imageManager.pickTiff();
+        fadeButton(signImageText);
+        pickedImage.setVisibility(View.VISIBLE);
+        imageManager.onImagePick();
     }
     @OnClick(R.id.detail_reward)
     void onReward(){
@@ -134,10 +140,7 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
         inflater.inflate(R.menu.email_detail_menu,menu);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
+
 
     @Override
     public void PickFormatError() {
@@ -153,9 +156,13 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
     }
 
     @Override
+    public void onOptionsMenuClosed(Menu menu) {
+        super.onOptionsMenuClosed(menu);
+    }
+
+    @Override
     public void doCombin(String image) {
         activity.startSupportActionMode(this);
-
         Bitmap bitmap=FileUtil.loadImage(image);
         pickedImage.setImageBitmap(bitmap);
     }
@@ -182,6 +189,7 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
         return true;
     }
 
+
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         return false;
@@ -189,9 +197,11 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        Log.w("actionmode",item.getItemId()+"");
         switch (item.getItemId()) {
             case R.id.action_combin:
                 combinAll();
+                mode.finish();
                 break;
 
         }
@@ -218,7 +228,9 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
             //Bitmap grayBmp = Transform.grayscale(capture);
             new SaveTiffTask().execute(fixWidthBitmap);
             frameLayout.setDrawingCacheEnabled(false);
-
+        if(imageManager.isSignMode()){
+            removeSignImage();
+        }
     }
     @Override
     public void onDestroyActionMode(ActionMode mode) {
@@ -234,6 +246,7 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
             case MotionEvent.ACTION_DOWN:
                 float x = motionEvent.getX();
                 float y = motionEvent.getY();
+                attachPoint((int) x,(int) y);
                 imageManager.setSignPoint(new PointF(x,y));
                 removeTouchListener();
                 showSignatureDialog();
@@ -241,8 +254,16 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
         }
         return false;
     }
+    private void attachPoint(int x,int y){
+        pointView=new ImageView(getContext());
+        pointView.setImageResource(R.drawable.detail_touch_point);
+        int width = pointView.getDrawable().getIntrinsicWidth();
+        FrameLayout.LayoutParams layoutParams=new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.setMargins(x-width/2,y-10,0,0);
+        frameLayout.addView(pointView,layoutParams);
+    }
 
-    private void showSignatureDialog(){
+    public void showSignatureDialog(){
         bottomSheetDialog = new BottomSheetDialog(getContext());
 
         View view1 = getActivity().getLayoutInflater().inflate(R.layout.bottom_sheet_layout, null);
@@ -254,7 +275,8 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
             public void onClick(View view) {
                 bottomSheetDialog.hide();
                 drawSignature();
-                activity.startSupportActionMode(EmailDetailFragment.this);
+                imageManager.setHasSigned(true);
+                doSign();
             }
         });
         ImageView delBtn=(ImageView)view1.findViewById(R.id.detail_sign_del);
@@ -268,12 +290,37 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
 
     }
 
+    @Override
+    public void doSign() {
+        activity.startSupportActionMode(EmailDetailFragment.this);
+    }
+
+    private void fadeOutAndHideImage(final ImageView img) {
+        Animation fadeOut = new AlphaAnimation(1, 0);
+        fadeOut.setInterpolator(new AccelerateInterpolator());
+        fadeOut.setDuration(1000);
+
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            public void onAnimationEnd(Animation animation) {
+                removePoint();
+            }
+
+            public void onAnimationRepeat(Animation animation) {
+            }
+
+            public void onAnimationStart(Animation animation) {
+            }
+        });
+        img.startAnimation(fadeOut);
+    }
+
     private void drawSignature(){
+        fadeOutAndHideImage(pointView);
         signaturePad.setDrawingCacheEnabled(true);
         Bitmap bitmap=signaturePad.getDrawingCache();
         bitmap= ImageUtil.TrimBitmap(bitmap);
         Bitmap scaledBitmap=Bitmap.createScaledBitmap(bitmap,bitmap.getWidth()/4,bitmap.getHeight()/4,false);
-        ImageView signImage=new ImageView(getContext());
+        signImage=new ImageView(getContext());
         signImage.setImageBitmap(scaledBitmap);
         signaturePad.setDrawingCacheEnabled(false);
         FrameLayout.LayoutParams layoutParams=new FrameLayout.LayoutParams
@@ -284,6 +331,28 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
         layoutParams.setMargins(left,top,0,0);
         frameLayout.addView(signImage,layoutParams);
     }
+
+    @Override
+    public void removeImage() {
+        pickedImage.setImageBitmap(null);
+    }
+
+    @Override
+    public void removeSign() {
+        removePoint();
+        removeSignImage();
+    }
+    private void removePoint(){
+        if(pointView!=null){
+            frameLayout.removeView(pointView);
+            pointView=null;
+        }
+    }
+    private void removeSignImage(){
+        frameLayout.removeView(signImage);
+        signImage=null;
+    }
+
     private class SaveTiffTask extends AsyncTask<Bitmap,Void,Boolean> {
 
         @Override

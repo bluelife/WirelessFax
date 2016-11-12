@@ -39,6 +39,7 @@ public class ImageManager implements ActivityListener{
     public static final String MODE_SIGN="sign";
     private String currentMode;
     private PointF signPoint;
+    private boolean hasSigned;
     public ImageManager(AppCompatActivity context,Fragment fragment) {
         this.context=context;
         this.fragment=fragment;
@@ -51,7 +52,11 @@ public class ImageManager implements ActivityListener{
         void PickFormatError();
         void setTiff();
         void doCombin(String image);
+        void doSign();
         void onSelectSignPosition();
+        void removeImage();
+        void removeSign();
+        void showSignatureDialog();
     }
 
     public void setListener(Listener listener){
@@ -61,24 +66,47 @@ public class ImageManager implements ActivityListener{
         return tiffPath;
     }
     public void onSignnature(){
-        currentMode=MODE_SIGN;
+        switchToSignature();
         if(tiffPath==null){
             pickTiff();
         }
-        else{
+        else if(signPoint==null){
             listener.onSelectSignPosition();
         }
+        else if(!hasSigned){
+            listener.showSignatureDialog();
+        }
+        else{
+            listener.doSign();
+        }
+    }
+    public void setHasSigned(boolean flag){
+        hasSigned=flag;
+    }
+    private void switchToSignature(){
+        currentMode=MODE_SIGN;
+        if(step==2){
+            listener.removeImage();
+        }
+        step=0;
+        pickImagePath=null;
+    }
+    private void switchToCombin(){
+        currentMode=MODE_IMAGE;
+        listener.removeSign();
+        signPoint=null;
+        hasSigned=false;
     }
     public void onImagePick(){
-        currentMode=MODE_IMAGE;
+        switchToCombin();
         if(tiffPath==null){
             pickTiff();
         }
         else if(pickImagePath==null){
-
+            pickImage();
         }
         else{
-
+            listener.doSign();
         }
     }
     public void pickTiff(){
@@ -149,6 +177,7 @@ public class ImageManager implements ActivityListener{
                     }
                 } else if (step == 1) {
                     if (checkImageFormat(uri.getPath())) {
+                        step=2;
                         pickImagePath = uri.getPath();
                         listener.doCombin(pickImagePath);
                     } else {
@@ -171,6 +200,8 @@ public class ImageManager implements ActivityListener{
     }
     public void init(){
         step=0;
+        signPoint=null;
+        pickImagePath=null;
     }
     private boolean checkValidFormat(String path) {
         String ext = path.substring(path.lastIndexOf(".") + 1).toLowerCase();

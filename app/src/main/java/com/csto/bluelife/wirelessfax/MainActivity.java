@@ -21,6 +21,7 @@ import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionInflater;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements DrawerLayout.Draw
     private View navHeader;
     DrawerLayout drawerLayout;
     private FragmentManager fragmentManager;
+    private Fragment currentFragment;
     private ActionBarDrawerToggle drawerToggle;
 
 
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements DrawerLayout.Draw
         navigationView = (NavigationView) findViewById(R.id.nav_view);
 
         // Navigation view header
-        navHeader = navigationView.getHeaderView(0);
+        //navHeader = navigationView.getHeaderView(0);
 
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         Fragment fragment=new HomeFragment();
@@ -196,6 +198,9 @@ public class MainActivity extends AppCompatActivity implements DrawerLayout.Draw
         fragmentTransaction.commit();
 
     }
+
+
+
     @Override
     public void onDrawerSlide(View drawerView, float slideOffset) {
 

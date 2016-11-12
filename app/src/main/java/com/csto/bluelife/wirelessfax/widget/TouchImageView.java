@@ -815,7 +815,7 @@ public class TouchImageView extends ImageView {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            Log.w("sss","touch");
+
             mScaleDetector.onTouchEvent(event);
             mGestureDetector.onTouchEvent(event);
             PointF curr = new PointF(event.getX(), event.getY());

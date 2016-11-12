@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <RelativeLayout
+        android:id="@+id/bottom_top"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -29,7 +30,12 @@
             android:layout_marginRight="10dp"
             android:src="@drawable/detail_action_signature_del"/>
     </RelativeLayout>
-
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@color/line_gray"/>
     <com.github.gcacace.signaturepad.views.SignaturePad
         android:id="@+id/signature_pad"
         android:layout_width="match_parent"
@@ -38,10 +44,5 @@
         app:penMaxWidth="8dp"
         app:penMinWidth="3dp" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:background="@color/line_gray"/>
+
 </LinearLayout>
