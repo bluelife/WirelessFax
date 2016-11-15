@@ -118,6 +118,7 @@ void writeDataToOptions(JNIEnv *env, jobject options, int directoryNumber) {
     jfieldID gOptions_outDirectoryCountFieldId = env->GetFieldID(jOptionsClass,
                                                                  "outDirectoryCount", "I");
     int dircount = getDyrectoryCount();
+    LOGES("writed","testt"+dircount);
     env->SetIntField(options, gOptions_outDirectoryCountFieldId, dircount);
 
     TIFFSetDirectory(image, directoryNumber);

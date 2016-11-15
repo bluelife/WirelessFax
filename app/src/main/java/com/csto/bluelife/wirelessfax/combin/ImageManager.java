@@ -34,6 +34,7 @@ public class ImageManager implements ActivityListener{
     private int step;
     private List<String> supportFormats;
     private String tiffPath;
+    private String tempTiffPath;
     private String pickImagePath;
     public static final String MODE_IMAGE="image";
     public static final String MODE_SIGN="sign";
@@ -147,12 +148,12 @@ public class ImageManager implements ActivityListener{
         fragment.startActivityForResult(i, FILE_CODE);
 
     }
-    public boolean saveImage(Bitmap bitmap) {
-
+    public boolean saveImage(Bitmap bitmap,boolean isMultiple) {
+        String savedPath=isMultiple?tiffPath+"_temp":tiffPath;
         // String fname = "Upload.png";
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
         String  currentTimeStamp = dateFormat.format(new Date());
-        File saved_image_file = new File(tiffPath);
+        File saved_image_file = new File(savedPath);
         TiffSaver.SaveOptions options = new TiffSaver.SaveOptions();
 //By default compression mode is none
 
@@ -160,6 +161,9 @@ public class ImageManager implements ActivityListener{
 //Save image as tif. If image saved succesfull true will be returned
         return TiffSaver.saveBitmap(saved_image_file, bitmap, options, 130);
 
+    }
+    public String getTempTiffPath(){
+        return tempTiffPath;
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -170,7 +174,7 @@ public class ImageManager implements ActivityListener{
                     if (checkValidFormat(uri.getPath())) {
                         tiffPath = uri.getPath();
                         listener.setTiff();
-                        pickImage();
+                        //pickImage();
 
                     } else {
                         listener.PickFormatError();

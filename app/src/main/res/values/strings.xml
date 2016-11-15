@@ -18,4 +18,6 @@
     <string name="detail_choose_signature_position">请点击屏幕选择签名的位置</string>
     <string name="detail_bottom_sheet_title">请手写签名：</string>
     <string name="detail_signature_del">删除</string>
+    <string name="choose_tiff_title">请选择要操作的图片</string>
+    <string name="confirm">确定</string>
 </resources>

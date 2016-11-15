@@ -180,6 +180,7 @@ JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffSaver_save
     return JNI_TRUE;
 }
 
+
 #ifdef __cplusplus
 }
 #endif

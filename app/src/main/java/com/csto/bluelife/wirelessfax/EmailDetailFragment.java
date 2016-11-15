@@ -12,7 +12,9 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.design.widget.Snackbar;
 import android.support.transition.Fade;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
@@ -36,16 +38,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.csto.bluelife.wirelessfax.combin.ImageManager;
+import com.csto.bluelife.wirelessfax.model.TiffImages;
 import com.csto.bluelife.wirelessfax.utils.FileUtil;
 import com.csto.bluelife.wirelessfax.utils.ImageUtil;
+import com.csto.bluelife.wirelessfax.widget.ChooseFragment;
 import com.csto.bluelife.wirelessfax.widget.TouchImageView;
 import com.github.gcacace.signaturepad.views.SignaturePad;
 
+import org.beyka.tiffbitmapfactory.TiffReplace;
 import org.beyka.tiffbitmapfactory.TiffSaver;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -150,10 +156,35 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
 
     @Override
     public void setTiff() {
-        Bitmap bitmap= FileUtil.loadImage(imageManager.getImage());
-        tiffImage.setImageBitmap(bitmap);
+        List<Bitmap> bitmaps= FileUtil.loadImage(imageManager.getImage());
+        Log.w("setttiff",""+bitmaps.size());
+
+            TiffImages.getInstance().setImages(bitmaps);
+            showChooseDialog();
+
+            //tiffImage.setImageBitmap(bitmaps.get(0));
 
     }
+    private void showChooseDialog(){
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        // Create and show the dialog.
+        ChooseFragment newFragment = new ChooseFragment();
+        newFragment.setListener(chooseListener);
+        newFragment.show(ft, "dialog");
+    }
+    private ChooseFragment.ClickListener chooseListener=new ChooseFragment.ClickListener() {
+        @Override
+        public void onDone() {
+            tiffImage.setImageBitmap(TiffImages.getInstance().getSelectBitmap());
+            imageManager.pickImage();
+        }
+    };
 
     @Override
     public void onOptionsMenuClosed(Menu menu) {
@@ -163,7 +194,7 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
     @Override
     public void doCombin(String image) {
         activity.startSupportActionMode(this);
-        Bitmap bitmap=FileUtil.loadImage(image);
+        Bitmap bitmap=FileUtil.loadImage(image).get(0);
         pickedImage.setImageBitmap(bitmap);
     }
 
@@ -362,7 +393,13 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
 
         @Override
         protected Boolean doInBackground(Bitmap... params) {
-            return imageManager.saveImage(params[0]);
+            boolean isMultiple=TiffImages.getInstance().getImages().size()>1;
+            boolean success=imageManager.saveImage(params[0],isMultiple);
+            if(isMultiple) {
+                success &= TiffReplace.replacePage(imageManager.getTempTiffPath(),
+                        imageManager.getImage(),TiffImages.getInstance().getSelectIndex());
+            }
+            return success;
         }
 
         @Override
