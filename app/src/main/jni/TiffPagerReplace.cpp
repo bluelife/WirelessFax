@@ -42,7 +42,7 @@
  * OF THIS SOFTWARE.
  */
 
-#include "tif_config.h"
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,13 +50,14 @@
 
 #include <ctype.h>
 #include <assert.h>
-
+#include <jni.h>
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
 
 #include "tiffio.h"
-
+#include <tif_config.h>
+#include "TiffPagerReplace.h"
 #ifndef HAVE_GETOPT
 extern int getopt(int, char**, char*);
 #endif
@@ -156,15 +157,16 @@ static TIFF* openSrcImage (char **imageSpec)
 }
 
 
-JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffSaver_replace
-        (JNIEnv *env, jclass clazz, jstring filePath, jstring destFilePath, jint index) {
+JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffReplace_replace(JNIEnv *env, jclass clazz, jstring filePath, jstring destFilePath,jstring resultPath,jint index) {
 
     const char *strPath = NULL;
     strPath = env->GetStringUTFChars(filePath, 0);
     const char *destPath = NULL;
     destPath = env->GetStringUTFChars(destFilePath, 0);
-    TIFF *src=TIFFOpen(strPath,"r");
-    TIFF *destTiff=TIFFOpen(destPath,"w");
+    const char *resultFilePath=NULL;
+    resultFilePath=env->GetStringUTFChars(resultPath, 0);
+    //TIFF *src=TIFFOpen(strPath,"r");
+    //TIFF *destTiff=TIFFOpen(destPath,"w");
 
     uint16 defconfig = (uint16) -1;
     uint16 deffillorder = 0;
@@ -172,8 +174,10 @@ JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffSaver_replace
     uint32 deftilelength = (uint32) -1;
     uint32 defrowsperstrip = (uint32) 0;
     uint32 diroff = 0;
-    TIFF* in,inputFile;
-    TIFF* out,insertFile;
+    TIFF* in;
+    TIFF* inputFile;
+    TIFF* out;
+    TIFF* insertFile;
     char mode[10];
     char* mp = mode;
     int c;
@@ -185,21 +189,25 @@ JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffSaver_replace
 
     in = TIFFOpen(destPath,"r");
     insertFile=TIFFOpen(strPath,"r");
-    out=TIFFOpen(destPath+"_temp","w");
+    /*char* lastfix="_temp";
+    char* tempFile = new char[strlen(destPath) + strlen(lastfix) + 1];
+    strcpy(tempFile, destPath);
+    strcat(tempFile, lastfix);*/
+    out=TIFFOpen(resultFilePath,"w");
     if (out == NULL)
         return JNI_FALSE;
     int dirCount = 0;
+    if(insertFile!=NULL){
+        LOGIS("INSERT","not null");
+    }
     do {
 
-        if (in == NULL)
-            return JNI_FALSE;
-        if (diroff != 0 && !TIFFSetSubDirectory(in, diroff)) {
-            TIFFError(TIFFFileName(in),
-                      "Error, setting subdirectory at %#x", diroff);
-            (void) TIFFClose(out);
+        if (in == NULL) {
+
+            LOGIS("INPUT",destPath);
             return JNI_FALSE;
         }
-
+        LOGII("INPUT",dirCount);
         config = defconfig;
         compression = defcompression;
         predictor = defpredictor;
@@ -210,6 +218,7 @@ JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffSaver_replace
         g3opts = defg3opts;
         inputFile=index==dirCount?insertFile:in;
         if (!tiffcp(inputFile, out) || !TIFFWriteDirectory(out)) {
+            LOGIS("tiffcpor dir error",resultFilePath);
             TIFFClose(out);
             return JNI_FALSE;
         }
@@ -223,6 +232,11 @@ JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffSaver_replace
         TIFFClose(in);
     TIFFClose(out);
     TIFFClose(insertFile);
+    remove(destPath);
+    rename(resultFilePath,destPath);
+    env->ReleaseStringUTFChars(filePath, strPath);
+    env->ReleaseStringUTFChars(destFilePath, destPath);
+    env->ReleaseStringUTFChars(resultPath, resultFilePath);
     return JNI_TRUE;
 }
 
@@ -713,7 +727,7 @@ DECLAREcpFunc(cpContig2ContigByRow)
 
 typedef void biasFn (void *image, void *bias, uint32 pixels);
 
-#define subtract(bits) \
+/*#define subtract(bits) \
 static void subtract##bits (void *i, void *b, uint32 pixels)\
 {\
    uint##bits *image = i;\
@@ -726,14 +740,14 @@ static void subtract##bits (void *i, void *b, uint32 pixels)\
 
 subtract(8)
 subtract(16)
-subtract(32)
+subtract(32)*/
 
 static biasFn *lineSubtractFn (unsigned bits)
 {
     switch (bits) {
-        case  8:  return subtract8;
-        case 16:  return subtract16;
-        case 32:  return subtract32;
+        //case  8:  return subtract8;
+        //case 16:  return subtract16;
+        //case 32:  return subtract32;
     }
     return NULL;
 }
@@ -982,8 +996,7 @@ DECLAREcpFunc(cpSeparate2ContigByRow)
     return 0;
 }
 
-static void
-cpStripToTile(uint8* out, uint8* in,
+static void cpStripToTile(uint8* out, uint8* in,
               uint32 rows, uint32 cols, int outskew, int inskew)
 {
     while (rows-- > 0) {
@@ -995,8 +1008,7 @@ cpStripToTile(uint8* out, uint8* in,
     }
 }
 
-static void
-cpContigBufToSeparateBuf(uint8* out, uint8* in,
+static void cpContigBufToSeparateBuf(uint8* out, uint8* in,
                          uint32 rows, uint32 cols, int outskew, int inskew, tsample_t spp,
                          int bytes_per_sample )
 {
@@ -1108,7 +1120,7 @@ DECLAREreadFunc(readSeparateStripsIntoBuffer)
             for (s = 0; s < spp; s++) {
                 uint8* bp = bufp + s;
                 tsize_t n = scanlinesize;
-                uint8* sbuf = scanline;
+                uint8* sbuf = (uint8*)scanline;
 
                 if (TIFFReadScanline(in, scanline, row, s) < 0
                     && !ignore) {
@@ -1166,11 +1178,11 @@ DECLAREreadFunc(readContigTilesIntoBuffer)
                 uint32 width = imagew - colb;
                 uint32 oskew = tilew - width;
                 cpStripToTile(bufp + colb,
-                              tilebuf, nrow, width,
+                              (uint8*)tilebuf, nrow, width,
                               oskew + iskew, oskew );
             } else
                 cpStripToTile(bufp + colb,
-                              tilebuf, nrow, tilew,
+                              (uint8*)tilebuf, nrow, tilew,
                               iskew, 0);
             colb += tilew;
         }
@@ -1230,7 +1242,7 @@ DECLAREreadFunc(readSeparateTilesIntoBuffer)
                     int oskew = tilew*spp - width;
                     cpSeparateBufToContigBuf(
                             bufp+colb+s*bytes_per_sample,
-                            tilebuf, nrow,
+                            (uint8*)tilebuf, nrow,
                             width/(spp*bytes_per_sample),
                             oskew + iskew,
                             oskew/spp, spp,
@@ -1238,7 +1250,7 @@ DECLAREreadFunc(readSeparateTilesIntoBuffer)
                 } else
                     cpSeparateBufToContigBuf(
                             bufp+colb+s*bytes_per_sample,
-                            tilebuf, nrow, tw,
+                            (uint8*)tilebuf, nrow, tw,
                             iskew, 0, spp,
                             bytes_per_sample);
             }
@@ -1291,7 +1303,7 @@ DECLAREwriteFunc(writeBufferToSeparateStrips)
             tsize_t stripsize = TIFFVStripSize(out, nrows);
 
             cpContigBufToSeparateBuf(
-                    obuf, (uint8*) buf + row*rowsize + s,
+                    (uint8*)obuf, (uint8*) buf + row*rowsize + s,
                     nrows, imagewidth, 0, 0, spp, 1);
             if (TIFFWriteEncodedStrip(out, strip++, obuf, stripsize) < 0) {
                 TIFFError(TIFFFileName(out),
@@ -1335,10 +1347,10 @@ DECLAREwriteFunc(writeBufferToContigTiles)
             if (colb + tilew > imagew) {
                 uint32 width = imagew - colb;
                 int oskew = tilew - width;
-                cpStripToTile(obuf, bufp + colb, nrow, width,
+                cpStripToTile((uint8*)obuf, bufp + colb, nrow, width,
                               oskew, oskew + iskew);
             } else
-                cpStripToTile(obuf, bufp + colb, nrow, tilew,
+                cpStripToTile((uint8*)obuf, bufp + colb, nrow, tilew,
                               0, iskew);
             if (TIFFWriteTile(out, obuf, col, row, 0, 0) < 0) {
                 TIFFError(TIFFFileName(out),
@@ -1392,13 +1404,13 @@ DECLAREwriteFunc(writeBufferToSeparateTiles)
                     uint32 width = (imagew - colb);
                     int oskew = tilew - width;
 
-                    cpContigBufToSeparateBuf(obuf,
+                    cpContigBufToSeparateBuf((uint8*)obuf,
                                              bufp + (colb*spp) + s,
                                              nrow, width/bytes_per_sample,
                                              oskew, (oskew*spp)+iskew, spp,
                                              bytes_per_sample);
                 } else
-                    cpContigBufToSeparateBuf(obuf,
+                    cpContigBufToSeparateBuf((uint8*)obuf,
                                              bufp + (colb*spp) + s,
                                              nrow, tilewidth,
                                              0, iskew, spp,

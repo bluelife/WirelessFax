@@ -181,7 +181,7 @@ SOURCES = $(libtiff_la_SOURCES) $(libtiffxx_la_SOURCES) \
 	$(mkg3states_SOURCES)
 DIST_SOURCES = $(libtiff_la_SOURCES) $(libtiffxx_la_SOURCES) \
 	$(mkg3states_SOURCES)
-am__libtiffinclude_HEADERS_DIST = tiff.h tiffio.h tiffvers.h \
+am__libtiffinclude_HEADERS_DIST = tiff.h tiffio.h tif_config.h tiffvers.h \
 	tiffio.hxx
 HEADERS = $(libtiffinclude_HEADERS) $(nodist_libtiffinclude_HEADERS) \
 	$(noinst_HEADERS)
@@ -349,7 +349,7 @@ EXTRA_DIST = Makefile.vc \
 	     libtiff.def \
 	     $(EXTRA_SRCS)
 
-libtiffinclude_HEADERS = tiff.h tiffio.h tiffvers.h $(am__append_1)
+libtiffinclude_HEADERS = tiff.h tiffio.h tiffvers.h tif_config.h $(am__append_1)
 noinst_HEADERS = \
 	t4.h \
 	tif_dir.h \

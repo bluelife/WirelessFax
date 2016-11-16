@@ -133,8 +133,6 @@ JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffSaver_save
                 strip[x/8] = eightPixels;
             }
             ret=TIFFWriteScanline(output_image, strip, y, 0);
-            LOGII("encode fax3",red);
-            LOGII("encode gray2",gray);
         }
         //ret=TIFFWriteEncodedStrip(output_image, 0, strip, bytesPerStrip);
         if (strip) _TIFFfree(strip);

@@ -44,6 +44,7 @@ LOCAL_TIFF_SRC_FILES := \
 	tiff/libtiff/tif_swab.c \
 	tiff/libtiff/tif_strip.c
 
+
 LOCAL_TIFF_SRC_FILES += tiff/port/lfind.c 
 ###########################################################
 
@@ -96,7 +97,8 @@ LOCAL_MODULE := tiffsaver
 LOCAL_CFLAGS := -DANDROID_NDK
 LOCAL_SRC_FILES := \
 	NativeExceptions.cpp \
-	NativeTiffSaver.cpp
+	NativeTiffSaver.cpp \
+	TiffPagerReplace.cpp
 LOCAL_LDLIBS := -ldl -llog -ljnigraphics
 LOCAL_LDFLAGS +=-ljnigraphics
 LOCAL_SHARED_LIBRARIES := tiff

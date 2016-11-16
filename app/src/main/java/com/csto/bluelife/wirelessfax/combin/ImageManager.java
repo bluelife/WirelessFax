@@ -35,6 +35,7 @@ public class ImageManager implements ActivityListener{
     private List<String> supportFormats;
     private String tiffPath;
     private String tempTiffPath;
+    private String resultTiffPath;
     private String pickImagePath;
     public static final String MODE_IMAGE="image";
     public static final String MODE_SIGN="sign";
@@ -149,7 +150,10 @@ public class ImageManager implements ActivityListener{
 
     }
     public boolean saveImage(Bitmap bitmap,boolean isMultiple) {
-        String savedPath=isMultiple?tiffPath+"_temp":tiffPath;
+        String tempPath=tiffPath.substring(0,tiffPath.lastIndexOf("."))+"_temp.tif";
+        String savedPath=isMultiple?tempPath:tiffPath;
+        tempTiffPath=savedPath;
+        resultTiffPath=tiffPath.substring(0,tiffPath.lastIndexOf("."))+"_result.tif";
         // String fname = "Upload.png";
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
         String  currentTimeStamp = dateFormat.format(new Date());
@@ -165,6 +169,7 @@ public class ImageManager implements ActivityListener{
     public String getTempTiffPath(){
         return tempTiffPath;
     }
+    public String getResultTiffPath(){return resultTiffPath;}
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == FILE_CODE && resultCode == Activity.RESULT_OK) {

@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <tiffio.h>
+
 /* Header for class org_beyka_tiffbitmapfactory_TiffSaver */
 
 #define LOGI(x) __android_log_print(ANDROID_LOG_DEBUG, "NativeTiffSaver", "%s", x)
@@ -20,8 +21,8 @@
 #define LOGE(x) __android_log_print(ANDROID_LOG_ERROR, "NativeTiffSaver", "%s", x)
 #define LOGES(x, y) __android_log_print(ANDROID_LOG_ERROR, "NativeTiffSaver", "%s %s", x, y)
 
-#ifndef _Included_org_beyka_tiffbitmapfactory_TiffSaver
-#define _Included_org_beyka_tiffbitmapfactory_TiffSaver
+#ifndef _Included_org_beyka_tiffbitmapfactory_TiffReplace
+#define _Included_org_beyka_tiffbitmapfactory_TiffReplace
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,7 +32,7 @@ extern "C" {
  * Signature: (Ljava/lang/String;)V
  */
 JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffReplace_replace
-        (JNIEnv *env, jclass clazz, jstring filePath, jstring destFilePath, jint index);
+        (JNIEnv *env, jclass clazz, jstring filePath, jstring destFilePath, jstring resultPath,jint index);
 
 #ifdef __cplusplus
 }

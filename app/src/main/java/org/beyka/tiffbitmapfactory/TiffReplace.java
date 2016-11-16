@@ -10,8 +10,8 @@ public class TiffReplace {
         System.loadLibrary("tiffsaver");
     }
 
-    public static boolean replacePage(String path,String destPath,int index){
-        return replace(path,destPath,index);
+    public static boolean replacePage(String path,String destPath,String resultPath,int index){
+        return replace(path,destPath,resultPath,index);
     }
-    private static synchronized native boolean replace(String path,String destPath,int index);
+    private static synchronized native boolean replace(String path,String destPath,String resultPath,int index);
 }

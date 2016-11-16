@@ -157,13 +157,17 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
     @Override
     public void setTiff() {
         List<Bitmap> bitmaps= FileUtil.loadImage(imageManager.getImage());
-        Log.w("setttiff",""+bitmaps.size());
 
-            TiffImages.getInstance().setImages(bitmaps);
+        TiffImages.getInstance().setImages(bitmaps);
             showChooseDialog();
 
             //tiffImage.setImageBitmap(bitmaps.get(0));
 
+    }
+    private void showTiff(){
+        List<Bitmap> bitmaps= FileUtil.loadImage(imageManager.getImage());
+        TiffImages.getInstance().setImages(bitmaps);
+        tiffImage.setImageBitmap(TiffImages.getInstance().getSelectBitmap());
     }
     private void showChooseDialog(){
         FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -181,7 +185,7 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
     private ChooseFragment.ClickListener chooseListener=new ChooseFragment.ClickListener() {
         @Override
         public void onDone() {
-            tiffImage.setImageBitmap(TiffImages.getInstance().getSelectBitmap());
+            showTiff();
             imageManager.pickImage();
         }
     };
@@ -395,9 +399,10 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
         protected Boolean doInBackground(Bitmap... params) {
             boolean isMultiple=TiffImages.getInstance().getImages().size()>1;
             boolean success=imageManager.saveImage(params[0],isMultiple);
+            Log.w("ssss",imageManager.getTempTiffPath()+"=="+imageManager.getImage()+"="+imageManager.getResultTiffPath());
             if(isMultiple) {
                 success &= TiffReplace.replacePage(imageManager.getTempTiffPath(),
-                        imageManager.getImage(),TiffImages.getInstance().getSelectIndex());
+                        imageManager.getImage(),imageManager.getResultTiffPath(),TiffImages.getInstance().getSelectIndex());
             }
             return success;
         }
@@ -407,7 +412,7 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
             progressBar.setVisibility(View.GONE);
             if(done){
                 imageManager.init();
-                setTiff();
+                showTiff();
                 pickedImage.setImageBitmap(null);
             }
             else{
