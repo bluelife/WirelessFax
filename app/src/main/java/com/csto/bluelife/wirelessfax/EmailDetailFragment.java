@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -47,8 +48,11 @@ import com.github.gcacace.signaturepad.views.SignaturePad;
 
 import org.beyka.tiffbitmapfactory.TiffReplace;
 import org.beyka.tiffbitmapfactory.TiffSaver;
+import org.beyka.tiffbitmapfactory.exceptions.NoSuchFileException;
+import org.beyka.tiffbitmapfactory.exceptions.NotEnoughtMemoryException;
 
 import java.io.File;
+import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -156,15 +160,27 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
 
     @Override
     public void setTiff() {
-        List<Bitmap> bitmaps= FileUtil.loadImage(imageManager.getImage());
+        try {
+            List<Bitmap> bitmaps = FileUtil.loadImage(imageManager.getImage());
 
-        TiffImages.getInstance().setImages(bitmaps);
+            TiffImages.getInstance().setImages(bitmaps);
             showChooseDialog();
-
+        }
+        catch (NotEnoughtMemoryException ex){
+            loadFileError();
+        }
+        catch (NoSuchFileException noFileEx){
+            loadFileError();
+        }
             //tiffImage.setImageBitmap(bitmaps.get(0));
 
     }
-    private void showTiff(){
+    private void loadFileError(){
+        Snackbar.make(rootView,"load file error accured.",Snackbar.LENGTH_SHORT)
+                .show();
+    }
+    @Override
+    public void showTiff(){
         List<Bitmap> bitmaps= FileUtil.loadImage(imageManager.getImage());
         TiffImages.getInstance().setImages(bitmaps);
         tiffImage.setImageBitmap(TiffImages.getInstance().getSelectBitmap());
@@ -312,6 +328,7 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
                 drawSignature();
                 imageManager.setHasSigned(true);
                 doSign();
+
             }
         });
         ImageView delBtn=(ImageView)view1.findViewById(R.id.detail_sign_del);
@@ -353,8 +370,9 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
         fadeOutAndHideImage(pointView);
         signaturePad.setDrawingCacheEnabled(true);
         Bitmap bitmap=signaturePad.getDrawingCache();
-        bitmap= ImageUtil.TrimBitmap(bitmap);
         Bitmap scaledBitmap=Bitmap.createScaledBitmap(bitmap,bitmap.getWidth()/4,bitmap.getHeight()/4,false);
+        scaledBitmap= ImageUtil.TrimBitmap(scaledBitmap);
+
         signImage=new ImageView(getContext());
         signImage.setImageBitmap(scaledBitmap);
         signaturePad.setDrawingCacheEnabled(false);
@@ -398,11 +416,14 @@ public class EmailDetailFragment extends Fragment implements ImageManager.Listen
         @Override
         protected Boolean doInBackground(Bitmap... params) {
             boolean isMultiple=TiffImages.getInstance().getImages().size()>1;
-            boolean success=imageManager.saveImage(params[0],isMultiple);
-            Log.w("ssss",imageManager.getTempTiffPath()+"=="+imageManager.getImage()+"="+imageManager.getResultTiffPath());
+            int index=TiffImages.getInstance().getSelectIndex();
+            int orientationType=TiffImages.getInstance().getOptionsList().get(index).getValue();
+            TiffSaver.Orientation orientation= TiffSaver.Orientation.fromInt(orientationType);
+            boolean success=imageManager.saveImage(params[0],isMultiple,orientation);
+            Log.w("save image",imageManager.getTempTiffPath()+"=="+imageManager.getImage()+"="+imageManager.getResultTiffPath());
             if(isMultiple) {
                 success &= TiffReplace.replacePage(imageManager.getTempTiffPath(),
-                        imageManager.getImage(),imageManager.getResultTiffPath(),TiffImages.getInstance().getSelectIndex());
+                        imageManager.getImage(),imageManager.getResultTiffPath(),index);
             }
             return success;
         }

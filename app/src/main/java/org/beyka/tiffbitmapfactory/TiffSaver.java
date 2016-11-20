@@ -63,6 +63,27 @@ public class TiffSaver {
         Orientation(int ordinal) {
             this.ordinal = ordinal;
         }
+        public static Orientation fromInt(int value){
+            switch (value){
+                case 1:
+                    return ORIENTATION_TOPLEFT;
+                case 2:
+                    return ORIENTATION_TOPRIGHT;
+                case 3:
+                    return ORIENTATION_BOTRIGHT;
+                case 4:
+                    return ORIENTATION_BOTLEFT;
+                case 5:
+                    return ORIENTATION_LEFTTOP;
+                case 6:
+                    return ORIENTATION_RIGHTTOP;
+                case 7:
+                    return ORIENTATION_RIGHTBOT;
+                case 8:
+                    return ORIENTATION_LEFTBOT;
+            }
+            return null;
+        }
     }
 
     /**

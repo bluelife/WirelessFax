@@ -19,15 +19,23 @@ public class TiffBitmapFactory {
     }
 
     public enum ImageOrientation {
-        ORIENTATION_TOPLEFT,
-        ORIENTATION_TOPRIGHT,
-        ORIENTATION_BOTRIGHT,
-        ORIENTATION_BOTLEFT,
-        ORIENTATION_LEFTTOP,
-        ORIENTATION_RIGHTTOP,
-        ORIENTATION_RIGHTBOT,
-        ORIENTATION_LEFTBOT,
-        UNAVAILABLE;
+        ORIENTATION_TOPLEFT(1),
+        ORIENTATION_TOPRIGHT(2),
+        ORIENTATION_BOTRIGHT(3),
+        ORIENTATION_BOTLEFT(4),
+        ORIENTATION_LEFTTOP(5),
+        ORIENTATION_RIGHTTOP(6),
+        ORIENTATION_RIGHTBOT(7),
+        ORIENTATION_LEFTBOT(8),
+        UNAVAILABLE(-1);
+        final int ordinal;
+
+        ImageOrientation(int ordinal) {
+            this.ordinal = ordinal;
+        }
+        public int getValue(){
+            return ordinal;
+        }
     }
 
     public enum ImageConfig {

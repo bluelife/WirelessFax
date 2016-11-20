@@ -98,6 +98,7 @@ JNICALL Java_org_beyka_tiffbitmapfactory_TiffBitmapFactory_nativeDecodePath
     writeDataToOptions(env, options, inDirectoryNumber);
 
     if (!inJustDecodeBounds) {
+
         TIFFSetDirectory(image, inDirectoryNumber);
         TIFFGetField(image, TIFFTAG_IMAGEWIDTH, &origwidth);
         TIFFGetField(image, TIFFTAG_IMAGELENGTH, &origheight);
@@ -264,7 +265,7 @@ jobject createBitmap(JNIEnv *env, int inSampleSize, int directoryNumber, jobject
         }
 
         if (0 ==
-            TIFFReadRGBAImageOriented(image, origwidth, origheight, origBuffer, ORIENTATION_TOPLEFT, 0)) {
+            TIFFReadRGBAImage(image, origwidth, origheight, origBuffer)) {
 	        free(origBuffer);
             LOGE("Error reading image.");
             return NULL;
@@ -293,6 +294,7 @@ jobject createBitmap(JNIEnv *env, int inSampleSize, int directoryNumber, jobject
     jclass bitmapConfigClass = env->FindClass("android/graphics/Bitmap$Config");
     jfieldID bitmapConfigField = NULL;
     void *processedBuffer = NULL;
+
     if (configInt == ARGB_8888) {
         processedBuffer = createBitmapARGB8888(env, inSampleSize, origBuffer, &bitmapwidth,
                                                &bitmapheight);
@@ -510,6 +512,7 @@ jint *createBitmapARGB8888(JNIEnv *env, int inSampleSize, unsigned int *buffer, 
 	for (int x = 0; x < size; x++) { barray[x] = false; }
         barray[0] = barray[size] = true;
         unsigned long long k = 1;
+
 
         switch (origorientation) {
             case ORIENTATION_LEFTTOP:

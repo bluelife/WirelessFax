@@ -53,6 +53,7 @@ public class ImageManager implements ActivityListener{
     public interface Listener{
         void PickFormatError();
         void setTiff();
+        void showTiff();
         void doCombin(String image);
         void doSign();
         void onSelectSignPosition();
@@ -149,7 +150,7 @@ public class ImageManager implements ActivityListener{
         fragment.startActivityForResult(i, FILE_CODE);
 
     }
-    public boolean saveImage(Bitmap bitmap,boolean isMultiple) {
+    public boolean saveImage(Bitmap bitmap, boolean isMultiple, TiffSaver.Orientation orientation) {
         String tempPath=tiffPath.substring(0,tiffPath.lastIndexOf("."))+"_temp.tif";
         String savedPath=isMultiple?tempPath:tiffPath;
         tempTiffPath=savedPath;
@@ -162,6 +163,7 @@ public class ImageManager implements ActivityListener{
 //By default compression mode is none
 
         options.compressionMode = TiffSaver.CompressionMode.COMPRESSION_CCITTFAX3;
+        options.orientation=orientation;
 //Save image as tif. If image saved succesfull true will be returned
         return TiffSaver.saveBitmap(saved_image_file, bitmap, options, 130);
 
@@ -197,7 +199,7 @@ public class ImageManager implements ActivityListener{
             else{
                 if (checkValidFormat(uri.getPath())) {
                     tiffPath = uri.getPath();
-                    listener.setTiff();
+                    listener.showTiff();
                     listener.onSelectSignPosition();
 
                 } else {
