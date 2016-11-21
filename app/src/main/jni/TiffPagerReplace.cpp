@@ -91,12 +91,14 @@ static	uint16 defcompression = (uint16) -1;
 static	uint16 defpredictor = (uint16) -1;
 
 static	int tiffcp(TIFF*, TIFF*);
+static  int TIFFPageCount(const char*);
 static	int processCompressOptions(char*);
 static	void usage(void);
 
 static char comma = ',';  /* (default) comma separator character */
 static TIFF* bias = NULL;
 static int pageNum = 0;
+static int totalNum=0;
 
 static int nextSrcImage (TIFF *tif, char **imageSpec)
 /*
@@ -200,6 +202,8 @@ JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffReplace_replace(
     if(insertFile!=NULL){
         LOGIS("INSERT","not null");
     }
+    totalNum=TIFFPageCount(destPath);
+    LOGII("total",totalNum);
     do {
 
         if (in == NULL) {
@@ -239,7 +243,83 @@ JNIEXPORT jboolean JNICALL Java_org_beyka_tiffbitmapfactory_TiffReplace_replace(
     env->ReleaseStringUTFChars(resultPath, resultFilePath);
     return JNI_TRUE;
 }
+//get page count
+uint16_t TIFFSHORT(unsigned char *buffer, bool bMotorola)
+{
+    uint16_t s;
 
+    if (bMotorola)
+        s = (buffer[0] << 8) + buffer[1];
+    else
+        s = buffer[0] + (buffer[1] << 8);
+
+    return s;
+}
+
+uint32_t TIFFLONG(unsigned char *buffer, bool bMotorola)
+{
+    uint32_t l;
+
+    if (bMotorola)
+        l = (buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8) + buffer[3];
+    else
+        l = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16) + (buffer[3] << 24);
+
+    return l;
+}
+
+static int
+TIFFPageCount(const char *filename)
+{
+    int i, iTags, IFD;
+    int iOffset, iTotalPages;
+    unsigned char buf[8];
+    FILE *handle;
+    bool bMotorola;
+    int iFileSize;
+
+    handle = fopen((char *)filename, "rb");
+    if (handle == NULL)
+        return 0;
+
+    // get the file size
+    fseek(handle, 0, SEEK_END);
+    iFileSize = (int)ftell(handle);
+    fseek(handle, 0, SEEK_SET);
+
+    i = fread(buf, 1, 8, handle); // Read TIFF header and first IFD offset
+
+    if (buf[0] != 'I' && buf[0] != 'M')
+    {
+        fclose(handle);
+        return 0; // Not a TIFF file
+    }
+    bMotorola = (buf[0] == 'M');   // get the byte order
+    IFD = TIFFLONG(&buf[4], bMotorola); // Read the first IFD pointer
+    if (IFD < 8 || IFD > iFileSize) // corrupt file, don't process it
+    {
+        fclose(handle);
+        return 0;
+    }
+
+    iTotalPages = 0;
+
+    while(IFD != 0 && IFD < iFileSize-4) // count the number of pages
+    {
+        fseek(handle, IFD, SEEK_SET);
+        fread(buf, 1, 2, handle); // get the number of tags in this page
+        iTags = TIFFSHORT(buf, bMotorola);  // Number of tags in this dir
+        i = iTags * 12 + 2; // Offset to next IFD in chain
+        if (iTags > 256) // Invalid header, abort
+            break;
+        fseek(handle, IFD+i, SEEK_SET);
+        fread(buf, 1, 4, handle); // read the next IFD value; 0 means end of chain
+        IFD = TIFFLONG(buf, bMotorola);
+        iTotalPages++;
+    }
+    fclose(handle);
+    return iTotalPages;
+}
 
 static void
 processG3Options(char* cp)
@@ -662,17 +742,30 @@ tiffcp(TIFF* in, TIFF* out)
     }
     {
         unsigned short pg0, pg1;
-        if (TIFFGetField(in, TIFFTAG_PAGENUMBER, &pg0, &pg1)) {
+        //if (TIFFGetField(in, TIFFTAG_PAGENUMBER, &pg0, &pg1)) {
             if (pageNum < 0) /* only one input file */
                 TIFFSetField(out, TIFFTAG_PAGENUMBER, pg0, pg1);
             else
-                TIFFSetField(out, TIFFTAG_PAGENUMBER, pageNum++, 0);
-        }
+                TIFFSetField(out, TIFFTAG_PAGENUMBER, pageNum++, totalNum);
+        //}
+
     }
 
     for (p = tags; p < &tags[NTAGS]; p++)
         CopyTag(p->tag, p->count, p->type);
 
+    uint32_t subfiletype;
+    if(TIFFGetField(in,TIFFTAG_SUBFILETYPE,&subfiletype)==1){
+        switch(subfiletype)
+        {
+            case 0x01:
+
+                TIFFSetField(out,TIFFTAG_SUBFILETYPE,FILETYPE_PAGE);
+                break;
+            default:
+                break;
+        }
+    }
     cf = pickCopyFunc(in, out, bitspersample, samplesperpixel);
     return (cf ? (*cf)(in, out, length, width, samplesperpixel) : FALSE);
 }

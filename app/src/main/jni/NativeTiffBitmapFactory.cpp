@@ -263,9 +263,9 @@ jobject createBitmap(JNIEnv *env, int inSampleSize, int directoryNumber, jobject
             LOGE("Can\'t allocate memory for origBuffer");
             return NULL;
         }
-
+        //TIFFReadRGBAImageOriented(image, origwidth, origheight, origBuffer, ORIENTATION_TOPLEFT, 0))
         if (0 ==
-            TIFFReadRGBAImage(image, origwidth, origheight, origBuffer)) {
+                TIFFReadRGBAImageOriented(image, origwidth, origheight, origBuffer,origorientation, 0)) {
 	        free(origBuffer);
             LOGE("Error reading image.");
             return NULL;
@@ -502,7 +502,7 @@ jint *createBitmapARGB8888(JNIEnv *env, int inSampleSize, unsigned int *buffer, 
             buffer = NULL;
         }
     }
-
+    LOGII("orrrr",origorientation);
     if (origorientation > 4) {
         unsigned int size = *bitmapheight * *bitmapwidth - 1;
         jint t;
