@@ -20,4 +20,5 @@
     <string name="detail_signature_del">删除</string>
     <string name="choose_tiff_title">请选择要操作的图片</string>
     <string name="confirm">确定</string>
+    <string name="check_update_hint">检查更新中...</string>
 </resources>

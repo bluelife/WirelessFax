@@ -37,7 +37,7 @@ public class HomeFragment extends Fragment implements InBoxListAdapter.ItemListe
         View view=inflater.inflate(R.layout.frag_home,container,false);
         setHasOptionsMenu(true);
         toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeAsUpIndicator(null);
+        //((AppCompatActivity)getActivity()).getSupportActionBar().setHomeAsUpIndicator(null);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getString(R.string.toobar_inbox_title));
         ButterKnife.bind(this,view);
         return view;

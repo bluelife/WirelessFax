@@ -16,6 +16,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.graphics.drawable.DrawerArrowDrawable;
 import android.support.v7.widget.Toolbar;
 import android.transition.Fade;
 import android.transition.Transition;
@@ -63,7 +64,12 @@ public class MainActivity extends AppCompatActivity implements DrawerLayout.Draw
         //getSupportActionBar().setDisplayShowTitleEnabled(true);
         drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
         drawerToggle=new ActionBarDrawerToggle(this,drawerLayout,toolbar,R.string.drawer_open, R.string.drawer_close);
+        //drawerToggle.setDrawerIndicatorEnabled(false);
+        DrawerArrowDrawable arrowDrawable=new DrawerArrowDrawable(this);
+        //drawerToggle.setHomeAsUpIndicator(R.drawable.action_add);
+
         drawerLayout.addDrawerListener(this);
+        drawerToggle.syncState();
         fragmentManager=getSupportFragmentManager();
         fragmentManager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override

@@ -9,7 +9,7 @@
 
         </menu>
     </item>
-    <item android:title="@string/drawer_fax_title">
+    <item android:title="@string/drawer_fax_title" android:icon="@drawable/detail_del">
         <menu>
             <group android:checkableBehavior="single">
                 <item

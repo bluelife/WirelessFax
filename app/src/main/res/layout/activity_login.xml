@@ -46,6 +46,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:hintEnabled="false"
+            app:passwordToggleDrawable="@drawable/password_toggle"
             >
             <EditText
                 android:id="@+id/editTextPassword"

@@ -11,10 +11,12 @@
         android:layout_centerInParent="true"/>
     <LinearLayout
         android:id="@+id/detail_control_panel"
-        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#373634">
+        android:background="#373634"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -28,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:drawablePadding="4dp"
-                android:drawableTop="@drawable/detail_sign"
+                android:drawableTop="@drawable/detail_sign_pen"
                 android:gravity="center"
                 android:text="签字"
                 android:textColor="@android:color/white" />
@@ -47,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:drawablePadding="4dp"
-                android:drawableTop="@drawable/detail_sign"
+                android:drawableTop="@drawable/detail_sign_image"
                 android:gravity="center"
                 android:text="签章"
                 android:textColor="@android:color/white" />
@@ -64,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:drawablePadding="4dp"
-                android:drawableTop="@drawable/detail_sign"
+                android:drawableTop="@drawable/detail_reward"
                 android:gravity="center"
                 android:text="转发"
                 android:textColor="@android:color/white" />
@@ -81,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:drawablePadding="4dp"
-                android:drawableTop="@drawable/detail_sign"
+                android:drawableTop="@drawable/detail_del"
                 android:gravity="center"
                 android:text="删除"
                 android:textColor="@android:color/white" />
@@ -98,12 +100,13 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:drawablePadding="4dp"
-                android:drawableTop="@drawable/detail_sign"
+                android:drawableTop="@drawable/detail_more"
                 android:gravity="center"
                 android:text="更多"
                 android:textColor="@android:color/white" />
         </LinearLayout>
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/detail_content"
         android:layout_above="@id/detail_control_panel"
@@ -175,6 +178,7 @@
                 android:layout_height="match_parent" />
         </FrameLayout>
     </LinearLayout>
+
 
 
 </RelativeLayout>
